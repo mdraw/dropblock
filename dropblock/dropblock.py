@@ -33,12 +33,12 @@ class DropBlock2D(Module):
 
     """
 
-    __constants__ = ['drop_prob', 'block_size', 'gamma']
+    __constants__ = ['block_size', 'gamma']
 
     def __init__(self, drop_prob, block_size):
         super(DropBlock2D, self).__init__()
 
-        self.drop_prob = drop_prob  # type: float
+        self.register_buffer('drop_prob', torch.tensor(drop_prob, dtype=torch.float32))
         self.block_size = block_size  # type: int
 
         # get gamma value
@@ -51,7 +51,7 @@ class DropBlock2D(Module):
         assert x.dim() == 4, \
             "Expected input with 4 dimensions (bsize, channels, height, width)"
 
-        if not self.training or self.drop_prob == 0.:
+        if not self.training or bool(self.drop_prob == torch.zeros(())):
             out = x
         else:
             # sample mask
@@ -83,7 +83,7 @@ class DropBlock2D(Module):
         return block_mask
 
     def _compute_gamma(self):
-        return self.drop_prob / (self.block_size ** 2)
+        return self.drop_prob.item() / (self.block_size ** 2)
 
 
 class DropBlock3D(Module):
@@ -107,12 +107,12 @@ class DropBlock3D(Module):
 
     """
 
-    __constants__ = ['drop_prob', 'block_size', 'gamma']
+    __constants__ = ['block_size', 'gamma']
 
     def __init__(self, drop_prob, block_size):
         super(DropBlock3D, self).__init__()
 
-        self.drop_prob = drop_prob  # type: float
+        self.register_buffer('drop_prob', torch.tensor(drop_prob, dtype=torch.float32))
         self.block_size = block_size  # type: int
 
         # get gamma value
@@ -125,7 +125,7 @@ class DropBlock3D(Module):
         assert x.dim() == 5, \
             "Expected input with 5 dimensions (bsize, channels, depth, height, width)"
 
-        if not self.training or self.drop_prob == 0.:
+        if not self.training or bool(self.drop_prob == torch.zeros(())):
             out = x
         else:
             # sample mask
@@ -157,4 +157,4 @@ class DropBlock3D(Module):
         return block_mask
 
     def _compute_gamma(self):
-        return self.drop_prob / (self.block_size ** 3)
+        return self.drop_prob.item() / (self.block_size ** 3)
